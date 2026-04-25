@@ -1,1 +1,77 @@
 @import "tailwindcss";
+
+@theme {
+  --color-rosa: #efd4cb;
+  --color-rosso: #9d2000;
+  --color-rosso-vivo: #d02c00;
+  --font-sans: Helvetica, "Helvetica Neue", Arial, sans-serif;
+}
+
+html,
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--color-rosa);
+  color: #000;
+}
+
+/* Reserve scrollbar gutter so toggling overflow doesn't shift layout */
+html {
+  scrollbar-gutter: stable;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+@keyframes section-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-section-enter {
+  animation: section-enter 0.35s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* View Transitions: nav items animate between menu/title/submenu positions */
+::view-transition-group(*) {
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.35s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+

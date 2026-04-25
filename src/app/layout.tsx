@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { I18nProvider } from "@/lib/i18n";
+import AppShell from "./AppShell";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Guidotti — Portfolio",
-  description: "Portfolio personale in costruzione.",
+  title: "Luca Guidotti",
+  description: "Portfolio di Luca Guidotti — opere, esposizioni, contatti.",
 };
 
 export default function RootLayout({
@@ -13,7 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="it">
-      <body className="bg-zinc-950 text-zinc-100 antialiased">{children}</body>
+      <body>
+        <I18nProvider>
+          <AppShell>{children}</AppShell>
+        </I18nProvider>
+      </body>
     </html>
   );
 }
