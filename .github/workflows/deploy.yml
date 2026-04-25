@@ -1,0 +1,44 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: pigna
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 2222
+          script: |
+            cd /opt/portfolio-guidotti
+
+            # Pull latest code
+            git fetch origin master
+            git reset --hard origin/master
+
+            # Install dependencies and build
+            npm ci
+            npm run build
+
+            # Copy static files and public for standalone mode
+            cp -r .next/static .next/standalone/.next/static
+            cp -r public .next/standalone/public
+
+            # Ensure log dir exists
+            mkdir -p logs
+
+            # Zero-downtime reload
+            pm2 describe portfolio-guidotti > /dev/null 2>&1 \
+              && pm2 reload ecosystem.config.js --update-env \
+              || pm2 start ecosystem.config.js
+
+            pm2 save
+
+            sleep 3
+            pm2 status portfolio-guidotti
