@@ -9,7 +9,7 @@ export default function ContattiSection() {
 
   return (
     <SectionLayout>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start max-w-5xl">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start">
         <dl className="space-y-5 md:space-y-6 text-base md:text-lg max-w-md">
           <div>
             <dt className="text-xs md:text-sm uppercase tracking-widest opacity-60">

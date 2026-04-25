@@ -19,6 +19,13 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
   const { t } = useI18n();
   const [index, setIndex] = useState(startIndex);
   const [showInfo, setShowInfo] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  const current = items[index];
+
+  useEffect(() => {
+    setImgLoaded(false);
+  }, [current.src]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -37,13 +44,17 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
     };
   }, []);
 
-  const current = items[index];
   const prev = () => setIndex((i) => (i - 1 + items.length) % items.length);
   const next = () => setIndex((i) => (i + 1) % items.length);
 
   const closeOnBackdrop = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
+
+  // vw/vh-based caps so the image is always fully visible inside the viewport,
+  // with safe room for the close/prev/next buttons on the edges.
+  const imgSize =
+    "max-w-[calc(100vw-5rem)] max-h-[calc(100dvh-7rem)] md:max-w-[calc(100vw-10rem)] md:max-h-[calc(100dvh-7rem)]";
 
   return (
     <div
@@ -52,7 +63,6 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
       aria-modal="true"
       onClick={closeOnBackdrop}
     >
-      {/* Top-right close */}
       <button
         type="button"
         onClick={onClose}
@@ -64,7 +74,6 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
         </svg>
       </button>
 
-      {/* Prev / next */}
       {items.length > 1 && (
         <>
           <button
@@ -77,7 +86,6 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
               <path d="M18 4L8 14l10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-
           <button
             type="button"
             onClick={next}
@@ -91,48 +99,60 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
         </>
       )}
 
-      {/* Image area */}
       <div
-        className="absolute inset-0 flex items-center justify-center px-12 md:px-20 py-14 md:py-16"
+        className="absolute inset-0 flex items-center justify-center px-10 md:px-20 py-14 md:py-16"
         onClick={closeOnBackdrop}
       >
         <div
-          className="relative inline-block max-w-full max-h-full"
+          className="relative inline-block"
           onMouseEnter={() => setShowInfo(true)}
           onMouseLeave={() => setShowInfo(false)}
         >
           {current.src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={current.src}
-              alt={current.title}
-              draggable={false}
-              className="block max-w-full max-h-full w-auto h-auto select-none"
-            />
+            <>
+              {!imgLoaded && (
+                <div
+                  className={`${imgSize} aspect-[4/5] bg-zinc-700/40 animate-pulse rounded-sm`}
+                />
+              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={current.src}
+                alt={current.title}
+                draggable={false}
+                onLoad={() => setImgLoaded(true)}
+                className={`block ${imgSize} w-auto h-auto select-none transition-opacity duration-300 ${
+                  imgLoaded ? "opacity-100" : "opacity-0 absolute inset-0"
+                }`}
+              />
+            </>
           ) : (
             <div className="w-[72vw] max-w-md aspect-[3/4] bg-zinc-300/90 flex items-center justify-center px-4 text-zinc-700 text-sm uppercase tracking-widest text-center">
               {current.title}
             </div>
           )}
 
-          {/* Info overlay — desktop: visible on hover, mobile: always visible */}
-          <div
-            className={`absolute bottom-0 left-0 right-0 p-3 md:p-5 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white pointer-events-none transition-opacity duration-300 hidden md:block ${
-              showInfo ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <h3 className="text-base md:text-lg font-bold">{current.title}</h3>
-            {current.meta && (
-              <p className="text-xs md:text-sm opacity-80 mt-1">{current.meta}</p>
-            )}
-          </div>
-
-          <div className="md:hidden absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent text-white pointer-events-none">
-            <h3 className="text-sm font-bold">{current.title}</h3>
-            {current.meta && (
-              <p className="text-xs opacity-80 mt-0.5">{current.meta}</p>
-            )}
-          </div>
+          {/* Info overlay — desktop hover, mobile always */}
+          {imgLoaded && (
+            <>
+              <div
+                className={`absolute bottom-0 left-0 right-0 p-3 md:p-5 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white pointer-events-none transition-opacity duration-300 hidden md:block ${
+                  showInfo ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <h3 className="text-base md:text-lg font-bold">{current.title}</h3>
+                {current.meta && (
+                  <p className="text-xs md:text-sm opacity-80 mt-1">{current.meta}</p>
+                )}
+              </div>
+              <div className="md:hidden absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent text-white pointer-events-none">
+                <h3 className="text-sm font-bold">{current.title}</h3>
+                {current.meta && (
+                  <p className="text-xs opacity-80 mt-0.5">{current.meta}</p>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

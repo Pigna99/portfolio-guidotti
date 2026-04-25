@@ -24,6 +24,8 @@ const OPERE: Opera[] = [
     cover: "/opere/01-01.png",
     images: [
       { src: "/opere/01-01.png", meta: "Olio su tela, 50×40 cm — 2026" },
+      { src: "/opere/01-01.png", meta: "Vista ravvicinata — 2026" },
+      { src: "/opere/01-01.png", meta: "Dettaglio centrale — 2026" },
     ],
   },
   { id: "o2", year: 2026, title: "Untitled #02", meta: "Tecnica mista, 60×90 cm", images: [{}, {}, {}] },

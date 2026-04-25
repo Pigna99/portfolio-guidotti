@@ -9,7 +9,7 @@ export default function AboutSection() {
 
   return (
     <SectionLayout>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start max-w-5xl">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start">
         <div className="space-y-6 md:space-y-8 text-base md:text-lg leading-relaxed max-w-xl">
           <p>{t("aboutStatement")}</p>
           <p>{t("aboutBio")}</p>

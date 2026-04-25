@@ -7,7 +7,7 @@ export default function SiteCredits() {
   const year = new Date().getFullYear();
 
   return (
-    <p className="text-xs text-black/70 leading-relaxed">
+    <p className="text-sm md:text-xs text-black/80 leading-relaxed">
       © {year} Luca Guidotti — {t("introDevelopedBy")}{" "}
       <a
         href="https://www.linkedin.com/in/andrea-pignotti-a87288208/"

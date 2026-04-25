@@ -1,9 +1,14 @@
+"use client";
+
+import { useState } from "react";
+
 interface Props {
   label?: string;
   src?: string;
   alt?: string;
   className?: string;
   aspect?: "square" | "portrait" | "landscape" | "auto";
+  fit?: "cover" | "contain";
 }
 
 export default function PlaceholderImage({
@@ -12,7 +17,10 @@ export default function PlaceholderImage({
   alt = "",
   className = "",
   aspect = "auto",
+  fit = "cover",
 }: Props) {
+  const [loaded, setLoaded] = useState(false);
+
   const aspectClass =
     aspect === "square"
       ? "aspect-square"
@@ -22,16 +30,24 @@ export default function PlaceholderImage({
       ? "aspect-[16/9]"
       : "";
 
+  const fitClass = fit === "contain" ? "object-contain" : "object-cover";
+
   if (src) {
     return (
       <div
         className={`relative w-full h-full ${aspectClass} bg-black/5 overflow-hidden ${className}`}
       >
+        {!loaded && (
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-black/10 via-black/5 to-black/15" />
+        )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
           alt={alt}
-          className="absolute inset-0 w-full h-full object-cover"
+          onLoad={() => setLoaded(true)}
+          className={`absolute inset-0 w-full h-full ${fitClass} transition-opacity duration-300 ${
+            loaded ? "opacity-100" : "opacity-0"
+          }`}
           draggable={false}
         />
       </div>

@@ -24,7 +24,7 @@ export default function IntroScreen({ onEnter }: Props) {
             src="/skull.png"
             alt=""
             draggable={false}
-            className="w-72 md:w-[28rem] max-w-full h-auto pointer-events-none"
+            className="w-36 md:w-56 max-w-full h-auto pointer-events-none"
           />
         </button>
         <p className="text-3xl md:text-5xl font-bold tracking-tight">Luca Guidotti</p>

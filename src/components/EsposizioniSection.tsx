@@ -22,7 +22,7 @@ export default function EsposizioniSection() {
 
   return (
     <SectionLayout>
-      <div className="space-y-10 md:space-y-14 max-w-3xl">
+      <div className="space-y-10 md:space-y-14">
         {years.map((year) => {
           const items = ESPOSIZIONI.filter((e) => e.year === year);
           return (

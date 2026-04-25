@@ -26,8 +26,10 @@ export default function HomePage() {
 
       <div className="md:hidden flex flex-col gap-6 p-6">
         <MainNav />
-        <SocialIcons />
-        <SiteCredits />
+        <div className="flex flex-col gap-3 pt-6 mt-2 border-t border-black/20">
+          <SocialIcons />
+          <SiteCredits />
+        </div>
       </div>
     </div>
   );
