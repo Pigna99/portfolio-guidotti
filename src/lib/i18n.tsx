@@ -21,10 +21,28 @@ const dict = {
 
     holdToReturn: "Tieni premuto il teschio 2s per tornare alla home iniziale",
 
-    aboutStatement:
-      "[Statement artistico — placeholder. Inserire qui il testo dello statement di Luca Guidotti.]",
-    aboutBio:
-      "[Bio / CV — placeholder. Inserire qui la biografia, gli studi, le residenze e gli highlight di carriera.]",
+    aboutStatement: `La pittura di Luca Guidotti si focalizza sull’espressività. Questa, resa con colori
+accesi e segni graffiati, enfatizza una lettura grottesca della vita: immagini crude,
+poco allegre, ma vivaci.
+Secondo Luca, l’arte è una seduta terapeutica con sé stessi: la terapia è una forma
+di conforto, una palestra contro il dolore, la manifestazione del desiderio di
+riconciliazione con i mostri interiori e le maschere che si indossa per apparire in un
+certo modo.
+Una delle questioni che a Luca sono più care è il memento mori, cioè la persistenza
+dell’idea di morte nella vita attraverso le manifestazioni di quest’ultima - la natura, il
+ritratto, il sesso.
+Luca fa proprie le tecniche del disegno e della pittura.
+Pittura e disegno si sovrappongono, ma non troppo. Il disegno è ambiguo, perché
+in certi casi è studiato e preparato, mentre in altri è lasciato all’improvvisazione, allo
+sfogo, alle dichiarazioni forti abbandonate a sé stesse e fatte di politica, passioni e
+abnegazioni. La pittura, d’altro canto, tende a essere una massa corporea di colore;
+il disegno cede la sua confezionata linearità al gesto pittorico disinvolto, al tono di
+voce ingordo, sornione e che soffre i limiti tecnici del medium. La pittura chiede di
+essere data velocemente, è poco domesticata e, per questo, impulsiva.`,
+    aboutBio: `Luca Guidotti nasce a San Benedetto del Tronto nel 1999.
+Nel 2024 consegue il Diploma accademico di II livello in Pittura Arti visive
+contemporanee all’Accademia di belle arti di Urbino.
+Dal 2020 lavora nel suo studio ed è impegnato in mostre d’arte contemporanea.`,
     aboutCv: "Scarica CV (PDF)",
     aboutPortfolio: "Scarica Portfolio (PDF)",
     aboutPortraitAlt: "Ritratto fotografico di Luca Guidotti",
@@ -61,10 +79,31 @@ const dict = {
 
     holdToReturn: "Hold the skull for 2s to return to the intro screen",
 
-    aboutStatement:
-      "[Artist statement — placeholder. Insert Luca Guidotti's statement here.]",
-    aboutBio:
-      "[Bio / CV — placeholder. Insert biography, education, residencies and career highlights here.]",
+    aboutStatement: `Luca Guidotti’s painting focuses on expression. Rendered through bright colours
+and scratchy marks, his art emphasises a grotesque interpretation of life: raw,
+sombre yet vivid images.
+For Luca, art is a therapeutic process the artist apply to himself: therapy is a form of
+comfort, a training ground against pain; it’s the manifestation of a desire for
+reconciliation with one’s inner demons and the masks he wears to appear a certain
+way.
+One of the issues closest to Luca’s art is the memento mori, which is
+the concept of death being persistent in life through its manifestations –
+nature, portraiture, sex.
+Luca adopts the techniques of drawing and painting.
+Painting and drawing overlap, but not at all. The drawings are ambiguous
+because in some cases they are carefully planned and prepared, whilst
+in others they’re left to improvisation, to an outpouring of emotion, to
+powerful statements left to their own devices and shaped by politics,
+passions and self-sacrifice. The paintings, on the other hand, tend to
+be a physical mass of colour; drawing yields its structured linearity to
+the casual painterly gesture, to a tone of voice that is greedy, sly and
+constrained by the technical limits of the medium. Painting demands to
+be executed swiftly; it is untamed and, for this reason, impulsive.`,
+    aboutBio: `Luca Guidotti is born in San Benedetto del Tronto, Italy, in 1999.
+He had a Master Degree in Painting Visual Contemporary Arts in the Academy of
+Fine Arts in Urbino (IT).
+Since 2020, he’s working in his studio and participating to contemporary art
+exhibitions.`,
     aboutCv: "Download CV (PDF)",
     aboutPortfolio: "Download Portfolio (PDF)",
     aboutPortraitAlt: "Portrait photograph of Luca Guidotti",

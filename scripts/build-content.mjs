@@ -2,23 +2,28 @@
 /**
  * Content build script.
  *
- * Reads source material from /content (gitignored) and produces:
- *   - /public/content/...  → optimised WebP at multiple widths (responsive)
- *   - /src/content/manifest.json → typed manifest consumed by the app
+ * Reads source material from /content (gitignored, lives only on the VPS or
+ * locally) and produces:
+ *   - /public/content/...          → optimised WebP at multiple widths
+ *   - /public/content/*.pdf        → CV / Portfolio PDFs (copied as-is)
+ *   - /src/content/manifest.json   → typed manifest consumed by the app
  *
- * Source structure (see content/README.md):
+ * Source structure (see PROVISIONING.md):
  *
  *   content/
- *     carosello/
+ *     CV-ITALIANO.pdf, CV-INGLESE.pdf
+ *     Portfolio-ITALIANO.pdf, Portfolio-INGLESE.pdf
+ *     carosello/                            (optional)
  *       *.{jpg,jpeg,png,webp}
- *     opere/
- *       {anno}/{slug-opera}/
- *         opera.json
- *         *.{jpg,jpeg,png,webp}
- *     esposizioni/
- *       {anno}/{slug-mostra}/
- *         esposizione.json
- *         *.{jpg,jpeg,png,webp}
+ *     opere/{anno}/{slug-opera}/
+ *       opera.json                          (title, description, date,
+ *                                            optional cover, optional video,
+ *                                            images[])
+ *       *.{jpg,jpeg,png,webp}
+ *     esposizioni/{anno}/{slug-mostra}/
+ *       esposizione.json                    (title, venue, dates,
+ *                                            optional video, images[])
+ *       *.{jpg,jpeg,png,webp}
  *
  * Output WebP filenames are content-hashed, so re-running this script only
  * re-encodes images whose source bytes actually changed.
@@ -30,7 +35,7 @@ import {
   readFile,
   writeFile,
   mkdir,
-  rm,
+  copyFile,
 } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
@@ -44,6 +49,13 @@ const MANIFEST_OUT = path.join(ROOT, "src", "content", "manifest.json");
 const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const RESPONSIVE_WIDTHS = [400, 800, 1600, 2400];
 const WEBP_QUALITY = 82;
+
+const PDF_MAP = {
+  "cv-italiano.pdf": "cv_it",
+  "cv-inglese.pdf": "cv_en",
+  "portfolio-italiano.pdf": "portfolio_it",
+  "portfolio-inglese.pdf": "portfolio_en",
+};
 
 const log = (...args) => console.log(...args);
 const warn = (...args) => console.warn("⚠ ", ...args);
@@ -69,13 +81,11 @@ async function listDirs(dir) {
     .map((e) => ({ name: e.name, path: path.join(dir, e.name) }));
 }
 
-function isImage(name) {
-  return IMAGE_EXTS.has(path.extname(name).toLowerCase());
-}
+const isImage = (name) => IMAGE_EXTS.has(path.extname(name).toLowerCase());
 
 function relPublic(absPath) {
   const rel = path.relative(path.join(ROOT, "public"), absPath);
-  return "/" + rel.replace(/\\/g, "/");
+  return encodeURI("/" + rel.replace(/\\/g, "/"));
 }
 
 function slugify(s) {
@@ -85,9 +95,26 @@ function slugify(s) {
     .replace(/^-+|-+$/g, "");
 }
 
+/** Extract YouTube video id from any common YouTube URL form. */
+function extractYouTubeId(url) {
+  if (!url || typeof url !== "string") return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?(?:.*&)?v=)([A-Za-z0-9_-]{11})/,
+    /(?:youtu\.be\/)([A-Za-z0-9_-]{11})/,
+    /(?:youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/,
+    /(?:youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/,
+    /^([A-Za-z0-9_-]{11})$/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
+
 /**
  * Encode a single source image to multiple WebP widths under outDir.
- * Returns ContentImage shape ({ src, srcset, width, height }).
+ * Returns { src, srcset, width, height }.
  */
 async function processImage(srcPath, outDir) {
   await mkdir(outDir, { recursive: true });
@@ -107,7 +134,6 @@ async function processImage(srcPath, outDir) {
   for (const w of RESPONSIVE_WIDTHS) {
     if (w <= naturalWidth * 1.05) widths.add(w);
   }
-  // Always include the original-ish size as the upper bound.
   widths.add(naturalWidth);
 
   const variants = [];
@@ -138,16 +164,10 @@ async function readJsonIfExists(filepath) {
   }
 }
 
-/**
- * For a folder of images + an optional metadata json, return ordered
- * ContentImage entries. JSON image order takes precedence; otherwise
- * filesystem alphabetical order is used.
- */
 async function buildImageList(dir, info, outDir) {
   const diskFiles = await listFiles(dir, isImage);
   const diskByName = new Map(diskFiles.map((p) => [path.basename(p), p]));
 
-  /** @type {{ file: string, meta?: Record<string, unknown> }[]} */
   let order;
   if (info && Array.isArray(info.images) && info.images.length > 0) {
     order = info.images.map((entry) =>
@@ -177,6 +197,16 @@ async function buildImageList(dir, info, outDir) {
     });
   }
   return images;
+}
+
+async function buildCoverImage(dir, coverFile, outDir) {
+  if (!coverFile) return null;
+  const coverPath = path.join(dir, coverFile);
+  if (!existsSync(coverPath)) {
+    warn(`Cover image not found: ${path.join(dir, coverFile)}`);
+    return null;
+  }
+  return processImage(coverPath, outDir);
 }
 
 async function buildCarosello() {
@@ -213,8 +243,17 @@ async function buildOpere() {
 
       const outDir = path.join(PUBLIC_OUT, "opere", String(year), operaDir.name);
       const images = await buildImageList(operaDir.path, info, outDir);
-      if (images.length === 0) {
-        warn(`No images found in opere/${year}/${operaDir.name}, skipping`);
+
+      let cover = await buildCoverImage(operaDir.path, info?.cover, outDir);
+      if (!cover && images.length > 0) cover = images[0];
+
+      const videoId = extractYouTubeId(info?.video);
+      if (info?.video && !videoId) {
+        warn(`Could not parse YouTube URL: ${info.video}`);
+      }
+
+      if (!cover && images.length === 0 && !videoId) {
+        warn(`Skipping ${operaDir.name}: no cover, no images, no video`);
         continue;
       }
 
@@ -226,14 +265,17 @@ async function buildOpere() {
         title_en: info?.title_en,
         description: info?.description,
         description_en: info?.description_en,
-        cover: images[0],
+        cover,
+        videoId: videoId ?? undefined,
         images,
       });
-      log(`✓ Opera: ${year}/${operaDir.name} (${images.length} img)`);
+      log(
+        `✓ Opera: ${year}/${operaDir.name} ` +
+          `(${images.length} img${videoId ? " + video" : ""})`
+      );
     }
   }
 
-  // Sort by year desc, then by date desc, then by title
   results.sort((a, b) => {
     if (a.year !== b.year) return b.year - a.year;
     const dateCmp = (b.date ?? "").localeCompare(a.date ?? "");
@@ -263,11 +305,6 @@ async function buildEsposizioni() {
       const info = await readJsonIfExists(
         path.join(expoDir.path, "esposizione.json")
       );
-      if (!info) {
-        warn(
-          `Missing/invalid esposizione.json in esposizioni/${year}/${expoDir.name}`
-        );
-      }
 
       const outDir = path.join(
         PUBLIC_OUT,
@@ -276,6 +313,11 @@ async function buildEsposizioni() {
         expoDir.name
       );
       const images = await buildImageList(expoDir.path, info, outDir);
+
+      const videoId = extractYouTubeId(info?.video);
+      if (info?.video && !videoId) {
+        warn(`Could not parse YouTube URL: ${info.video}`);
+      }
 
       results.push({
         id: expoDir.name,
@@ -288,21 +330,47 @@ async function buildEsposizioni() {
         venue_en: info?.venue_en,
         start_date: info?.start_date,
         end_date: info?.end_date,
+        videoId: videoId ?? undefined,
         images,
       });
       log(
-        `✓ Esposizione: ${year}/${expoDir.name} (${images.length} img)`
+        `✓ Esposizione: ${year}/${expoDir.name} ` +
+          `(${images.length} img${videoId ? " + video" : ""})`
       );
     }
   }
 
-  // Sort by year desc, then by start_date desc
   results.sort((a, b) => {
     if (a.year !== b.year) return b.year - a.year;
     return (b.start_date ?? "").localeCompare(a.start_date ?? "");
   });
 
   return results;
+}
+
+/** Copy CV / Portfolio PDFs from /content/ → /public/content/. */
+async function buildPdfs() {
+  if (!existsSync(CONTENT_SRC)) return {};
+  await mkdir(PUBLIC_OUT, { recursive: true });
+
+  const files = await listFiles(CONTENT_SRC, (n) =>
+    n.toLowerCase().endsWith(".pdf")
+  );
+  /** @type {Record<string,string>} */
+  const result = {};
+  for (const file of files) {
+    const lower = path.basename(file).toLowerCase();
+    const key = PDF_MAP[lower];
+    if (!key) {
+      warn(`Unknown PDF (skipping): ${path.basename(file)}`);
+      continue;
+    }
+    const dest = path.join(PUBLIC_OUT, path.basename(file));
+    await copyFile(file, dest);
+    result[key] = relPublic(dest);
+    log(`✓ PDF: ${path.basename(file)} → ${key}`);
+  }
+  return result;
 }
 
 async function main() {
@@ -312,25 +380,28 @@ async function main() {
 
   if (!existsSync(CONTENT_SRC)) {
     warn(`Source directory does not exist: ${CONTENT_SRC}`);
-    warn("Creating empty manifest.");
+    warn("Writing empty manifest.");
   }
 
   const carosello = await buildCarosello();
   const opere = await buildOpere();
   const esposizioni = await buildEsposizioni();
+  const pdfs = await buildPdfs();
 
   const manifest = {
     generatedAt: new Date().toISOString(),
     carosello,
     opere,
     esposizioni,
+    pdfs,
   };
 
   await writeFile(MANIFEST_OUT, JSON.stringify(manifest, null, 2) + "\n");
   log(`\n✓ Manifest: ${path.relative(ROOT, MANIFEST_OUT)}`);
-  log(`  Carosello: ${carosello.length}`);
-  log(`  Opere: ${opere.length}`);
-  log(`  Esposizioni: ${esposizioni.length}`);
+  log(`  Carosello:    ${carosello.length}`);
+  log(`  Opere:        ${opere.length}`);
+  log(`  Esposizioni:  ${esposizioni.length}`);
+  log(`  PDFs:         ${Object.keys(pdfs).length}`);
 }
 
 main().catch((err) => {

@@ -17,7 +17,10 @@ export interface Opera {
   title_en?: string;
   description?: string;
   description_en?: string;
-  cover: ContentImage;
+  /** Cover thumbnail (may be a dedicated file, not necessarily in `images`). */
+  cover: ContentImage | null;
+  /** Optional YouTube video id. If present, opens in the lightbox alongside images. */
+  videoId?: string;
   images: ContentImage[];
 }
 
@@ -33,7 +36,15 @@ export interface Esposizione {
   /** YYYY-MM (or YYYY-MM-DD) */
   start_date?: string;
   end_date?: string;
+  videoId?: string;
   images: ContentImage[];
+}
+
+export interface PdfLinks {
+  cv_it?: string;
+  cv_en?: string;
+  portfolio_it?: string;
+  portfolio_en?: string;
 }
 
 export interface Manifest {
@@ -41,4 +52,5 @@ export interface Manifest {
   carosello: ContentImage[];
   opere: Opera[];
   esposizioni: Esposizione[];
+  pdfs: PdfLinks;
 }

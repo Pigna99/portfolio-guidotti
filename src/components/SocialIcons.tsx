@@ -13,25 +13,25 @@ const SOCIALS: Social[] = [
   {
     key: "instagram",
     label: "Instagram",
-    url: "https://instagram.com/",
+    url: "https://www.instagram.com/_lucaguidotti_/",
     Icon: InstagramIcon,
   },
   {
     key: "saatchi",
     label: "Saatchi Art",
-    url: "https://www.saatchiart.com/",
+    url: "https://www.saatchiart.com/en-it/lucaguidotti",
     Icon: SaatchiIcon,
   },
   {
     key: "linkedin",
     label: "LinkedIn",
-    url: "https://www.linkedin.com/",
+    url: "https://www.linkedin.com/in/luca-guidotti-b52769289/",
     Icon: LinkedInIcon,
   },
   {
     key: "mail",
     label: "Mail",
-    url: "mailto:hello@example.com",
+    url: "mailto:lucaguidotti1999@libero.it",
     Icon: MailIcon,
   },
 ];

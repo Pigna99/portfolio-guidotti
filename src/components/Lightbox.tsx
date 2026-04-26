@@ -3,13 +3,23 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 
-export interface LightboxItem {
+interface LightboxImage {
+  type: "image";
   title: string;
   meta?: string;
   src?: string;
   srcset?: string;
   alt?: string;
 }
+
+interface LightboxVideo {
+  type: "video";
+  title: string;
+  meta?: string;
+  videoId: string;
+}
+
+export type LightboxItem = LightboxImage | LightboxVideo;
 
 interface Props {
   items: LightboxItem[];
@@ -27,7 +37,7 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
 
   useEffect(() => {
     setImgLoaded(false);
-  }, [current.src]);
+  }, [index]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -108,12 +118,27 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
           onMouseEnter={() => setShowInfo(true)}
           onMouseLeave={() => setShowInfo(false)}
         >
-          {current.src ? (
+          {current.type === "video" ? (
+            <div
+              className="relative bg-black"
+              style={{
+                width: "min(85vw, calc((100dvh - 7rem) * 16 / 9))",
+                aspectRatio: "16 / 9",
+              }}
+            >
+              <iframe
+                src={`https://www.youtube.com/embed/${current.videoId}?rel=0&modestbranding=1`}
+                title={current.title}
+                className="absolute inset-0 w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          ) : current.src ? (
             <>
               {!imgLoaded && (
-                <div
-                  className={`${imgSize} aspect-[4/5] bg-zinc-700/40 animate-pulse rounded-sm`}
-                />
+                <div className={`${imgSize} aspect-[4/5] bg-zinc-700/40 animate-pulse rounded-sm`} />
               )}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -134,7 +159,7 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
             </div>
           )}
 
-          {imgLoaded && (
+          {(current.type === "video" || imgLoaded) && (
             <>
               <div
                 className={`absolute bottom-0 left-0 right-0 p-3 md:p-5 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white pointer-events-none transition-opacity duration-300 hidden md:block ${

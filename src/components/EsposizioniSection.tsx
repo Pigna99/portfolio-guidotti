@@ -23,6 +23,30 @@ export default function EsposizioniSection() {
       lang === "en" && e.description_en ? e.description_en : e.description,
   });
 
+  const buildLightboxItems = (e: Esposizione): LightboxItem[] => {
+    const items: LightboxItem[] = [];
+    const { title, venue } = localized(e);
+    if (e.videoId) {
+      items.push({
+        type: "video",
+        title,
+        meta: venue,
+        videoId: e.videoId,
+      });
+    }
+    e.images.forEach((img, i) => {
+      items.push({
+        type: "image",
+        title: `${title} (${i + 1}/${e.images.length})`,
+        meta: (lang === "en" ? img.caption_en : img.caption) ?? img.caption ?? venue,
+        src: img.src,
+        srcset: img.srcset,
+        alt: lang === "en" && img.alt_en ? img.alt_en : img.alt,
+      });
+    });
+    return items;
+  };
+
   return (
     <SectionLayout>
       {esposizioni.length === 0 ? (
@@ -54,13 +78,13 @@ export default function EsposizioniSection() {
                       e.end_date,
                       lang
                     );
-                    const hasImages = e.images.length > 0;
+                    const hasMedia = e.images.length > 0 || !!e.videoId;
                     return (
                       <li
                         key={e.id}
                         className="border-t border-black/30 pt-4"
                       >
-                        {hasImages ? (
+                        {hasMedia ? (
                           <button
                             type="button"
                             onClick={() => setOpen(e)}
@@ -96,21 +120,9 @@ export default function EsposizioniSection() {
         </div>
       )}
 
-      {open && open.images.length > 0 && (
+      {open && (
         <Lightbox
-          items={open.images.map(
-            (img, i): LightboxItem => ({
-              title: `${localized(open).title} (${i + 1}/${open.images.length})`,
-              meta:
-                (lang === "en" ? img.caption_en : img.caption) ??
-                img.caption ??
-                localized(open).venue ??
-                undefined,
-              src: img.src,
-              srcset: img.srcset,
-              alt: lang === "en" && img.alt_en ? img.alt_en : img.alt,
-            })
-          )}
+          items={buildLightboxItems(open)}
           onClose={() => setOpen(null)}
         />
       )}

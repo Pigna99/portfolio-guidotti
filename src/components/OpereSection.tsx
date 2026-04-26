@@ -22,6 +22,31 @@ export default function OpereSection() {
   const localizedTitle = (o: Opera) =>
     lang === "en" && o.title_en ? o.title_en : o.title;
 
+  const buildLightboxItems = (o: Opera): LightboxItem[] => {
+    const items: LightboxItem[] = [];
+    const title = localizedTitle(o);
+    if (o.videoId) {
+      items.push({
+        type: "video",
+        title,
+        meta:
+          (lang === "en" ? o.description_en : o.description) ?? o.description,
+        videoId: o.videoId,
+      });
+    }
+    o.images.forEach((img, i) => {
+      items.push({
+        type: "image",
+        title: `${title} (${i + 1}/${o.images.length})`,
+        meta: (lang === "en" ? img.caption_en : img.caption) ?? img.caption,
+        src: img.src,
+        srcset: img.srcset,
+        alt: lang === "en" && img.alt_en ? img.alt_en : img.alt,
+      });
+    });
+    return items;
+  };
+
   return (
     <SectionLayout>
       {opere.length === 0 ? (
@@ -53,8 +78,8 @@ export default function OpereSection() {
                         className="relative aspect-[3/4] block group"
                       >
                         <PlaceholderImage
-                          src={o.cover.src}
-                          srcset={o.cover.srcset}
+                          src={o.cover?.src}
+                          srcset={o.cover?.srcset}
                           sizes={GRID_SIZES}
                           alt={title}
                           label={t("placeholderImage")}
@@ -80,18 +105,7 @@ export default function OpereSection() {
 
       {open && (
         <Lightbox
-          items={open.images.map(
-            (img, i): LightboxItem => ({
-              title: `${localizedTitle(open)} (${i + 1}/${open.images.length})`,
-              meta:
-                (lang === "en" ? img.caption_en : img.caption) ??
-                img.caption ??
-                undefined,
-              src: img.src,
-              srcset: img.srcset,
-              alt: lang === "en" && img.alt_en ? img.alt_en : img.alt,
-            })
-          )}
+          items={buildLightboxItems(open)}
           onClose={() => setOpen(null)}
         />
       )}

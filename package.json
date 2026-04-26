@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/build-content.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/build-content.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "content": "node scripts/build-content.mjs",
-    "sync-content": "rsync -avz --delete-after --info=progress2 public/content/ pigna-bot:/opt/portfolio-guidotti/public/content/",
+    "rebuild:vps": "bash scripts/vps-rebuild.sh",
     "logo": "node scripts/process-logo.mjs"
   },
   "dependencies": {
