@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 interface Props {
   label?: string;
@@ -25,6 +25,14 @@ export default function PlaceholderImage({
 }: Props) {
   const [loaded, setLoaded] = useState(false);
 
+  // Callback ref: runs synchronously when img mounts. Detects images already
+  // in the browser cache (where onLoad sometimes does not fire).
+  const handleRef = useCallback((img: HTMLImageElement | null) => {
+    if (img && img.complete && img.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, []);
+
   const aspectClass =
     aspect === "square"
       ? "aspect-square"
@@ -46,11 +54,13 @@ export default function PlaceholderImage({
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
+          ref={handleRef}
           src={src}
           srcSet={srcset}
           sizes={sizes}
           alt={alt}
           onLoad={() => setLoaded(true)}
+          onError={() => setLoaded(true)}
           className={`absolute inset-0 w-full h-full ${fitClass} transition-opacity duration-300 ${
             loaded ? "opacity-100" : "opacity-0"
           }`}

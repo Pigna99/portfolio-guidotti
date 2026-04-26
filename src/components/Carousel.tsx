@@ -20,6 +20,8 @@ const FALLBACK: FallbackSlide[] = [
   { label: "Mostra 04", hue: 320 },
 ];
 
+const SWIPE_THRESHOLD = 50;
+
 export default function Carousel({ intervalMs = 5500 }: Props) {
   const { t, lang } = useI18n();
   const slides = carosello.length > 0 ? carosello : null;
@@ -29,17 +31,19 @@ export default function Carousel({ intervalMs = 5500 }: Props) {
   const [playing, setPlaying] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [loadedIndexes, setLoadedIndexes] = useState<Set<number>>(new Set());
-  const timerRef = useRef<number | null>(null);
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // Reset auto-advance timer whenever `current` changes (manually OR via timer).
   useEffect(() => {
     if (!playing || total <= 1) return;
-    timerRef.current = window.setInterval(() => {
+    const id = window.setInterval(() => {
       setCurrent((c) => (c + 1) % total);
     }, intervalMs);
-    return () => {
-      if (timerRef.current !== null) window.clearInterval(timerRef.current);
-    };
-  }, [playing, total, intervalMs]);
+    return () => window.clearInterval(id);
+  }, [playing, total, intervalMs, current]);
 
   const next = () => setCurrent((c) => (c + 1) % total);
   const prev = () => setCurrent((c) => (c - 1 + total) % total);
@@ -52,11 +56,38 @@ export default function Carousel({ intervalMs = 5500 }: Props) {
       return n;
     });
 
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    setDragging(true);
+    setDragX(0);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    setDragX(e.touches[0].clientX - touchStartX.current);
+  };
+
+  const onTouchEnd = () => {
+    if (touchStartX.current === null) return;
+    const w = containerRef.current?.clientWidth ?? 1;
+    if (dragX > SWIPE_THRESHOLD && total > 1) prev();
+    else if (dragX < -SWIPE_THRESHOLD && total > 1) next();
+    void w;
+    touchStartX.current = null;
+    setDragging(false);
+    setDragX(0);
+  };
+
   return (
     <div
-      className="relative w-full h-full min-h-[60vh] md:min-h-screen overflow-hidden bg-black/10"
+      ref={containerRef}
+      className="relative w-full h-full min-h-[60vh] md:min-h-screen overflow-hidden bg-black/10 select-none"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchEnd}
     >
       {slides
         ? slides.map((s, i) => {
@@ -67,14 +98,23 @@ export default function Carousel({ intervalMs = 5500 }: Props) {
             return (
               <div
                 key={i}
-                className="absolute inset-0 transition-transform duration-[800ms] ease-[cubic-bezier(0.65,0,0.35,1)] bg-black/10"
-                style={{ transform: `translateX(${offset * 100}%)` }}
+                className={`absolute inset-0 ${
+                  dragging
+                    ? ""
+                    : "transition-transform duration-[800ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+                } bg-black/10`}
+                style={{
+                  transform: `translate3d(calc(${offset * 100}% + ${dragX}px), 0, 0)`,
+                }}
               >
                 {!isLoaded && (
                   <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-black/15 via-black/5 to-black/20" />
                 )}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
+                  ref={(img) => {
+                    if (img && img.complete && img.naturalWidth > 0) markLoaded(i);
+                  }}
                   src={s.src}
                   srcSet={s.srcset}
                   sizes="(min-width: 768px) 60vw, 100vw"
@@ -93,9 +133,13 @@ export default function Carousel({ intervalMs = 5500 }: Props) {
             return (
               <div
                 key={i}
-                className="absolute inset-0 transition-transform duration-[800ms] ease-[cubic-bezier(0.65,0,0.35,1)] flex items-center justify-center"
+                className={`absolute inset-0 ${
+                  dragging
+                    ? ""
+                    : "transition-transform duration-[800ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+                } flex items-center justify-center`}
                 style={{
-                  transform: `translateX(${offset * 100}%)`,
+                  transform: `translate3d(calc(${offset * 100}% + ${dragX}px), 0, 0)`,
                   backgroundColor: `hsl(${s.hue}, 35%, 72%)`,
                 }}
               >

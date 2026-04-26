@@ -1,4 +1,5 @@
 export interface ContentImage {
+  type: "image";
   src: string;
   srcset: string;
   width: number;
@@ -9,6 +10,18 @@ export interface ContentImage {
   caption_en?: string;
 }
 
+export interface ContentVideo {
+  type: "video";
+  videoId: string;
+  caption?: string;
+  caption_en?: string;
+  alt?: string;
+  alt_en?: string;
+}
+
+/** A media item in opera/esposizione image lists. */
+export type MediaItem = ContentImage | ContentVideo;
+
 export interface Opera {
   id: string;
   year: number;
@@ -17,11 +30,10 @@ export interface Opera {
   title_en?: string;
   description?: string;
   description_en?: string;
-  /** Cover thumbnail (may be a dedicated file, not necessarily in `images`). */
+  /** Cover thumbnail (image only). */
   cover: ContentImage | null;
-  /** Optional YouTube video id. If present, opens in the lightbox alongside images. */
-  videoId?: string;
-  images: ContentImage[];
+  /** Mixed list of images and videos shown in the lightbox. */
+  media: MediaItem[];
 }
 
 export interface Esposizione {
@@ -33,11 +45,10 @@ export interface Esposizione {
   description_en?: string;
   venue?: string;
   venue_en?: string;
-  /** YYYY-MM (or YYYY-MM-DD) */
+  /** YYYY, YYYY-MM, or YYYY-MM-DD */
   start_date?: string;
   end_date?: string;
-  videoId?: string;
-  images: ContentImage[];
+  media: MediaItem[];
 }
 
 export interface PdfLinks {
