@@ -20,11 +20,6 @@ body {
   color: #000;
 }
 
-/* Reserve scrollbar gutter so toggling overflow doesn't shift layout */
-html {
-  scrollbar-gutter: stable;
-}
-
 button {
   font-family: inherit;
   cursor: pointer;

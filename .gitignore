@@ -30,3 +30,9 @@ next-env.d.ts
 # Docs needed for developer context
 docs/
 
+# Source content (originals): kept locally, never committed
+/content/
+
+# Optimized content (WebP responsive variants): synced to VPS via `npm run sync-content`,
+# never committed. The manifest in src/content/manifest.json IS committed.
+/public/content/

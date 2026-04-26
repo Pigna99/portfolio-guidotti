@@ -5,6 +5,8 @@ import { useState } from "react";
 interface Props {
   label?: string;
   src?: string;
+  srcset?: string;
+  sizes?: string;
   alt?: string;
   className?: string;
   aspect?: "square" | "portrait" | "landscape" | "auto";
@@ -14,6 +16,8 @@ interface Props {
 export default function PlaceholderImage({
   label = "Placeholder",
   src,
+  srcset,
+  sizes,
   alt = "",
   className = "",
   aspect = "auto",
@@ -43,6 +47,8 @@ export default function PlaceholderImage({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
+          srcSet={srcset}
+          sizes={sizes}
           alt={alt}
           onLoad={() => setLoaded(true)}
           className={`absolute inset-0 w-full h-full ${fitClass} transition-opacity duration-300 ${

@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-04-26T05:56:48.329Z",
+  "carosello": [],
+  "opere": [
+    {
+      "id": "studio-01",
+      "year": 2026,
+      "date": "2026-01",
+      "title": "Studio #01",
+      "title_en": "Study #01",
+      "description": "Olio su tela, prova di studio.",
+      "description_en": "Oil on canvas, study piece.",
+      "cover": {
+        "src": "/content/opere/2026/studio-01/01-frontale-1630-ad80b7d3df.webp",
+        "srcset": "/content/opere/2026/studio-01/01-frontale-400-ad80b7d3df.webp 400w, /content/opere/2026/studio-01/01-frontale-800-ad80b7d3df.webp 800w, /content/opere/2026/studio-01/01-frontale-1600-ad80b7d3df.webp 1600w, /content/opere/2026/studio-01/01-frontale-1630-ad80b7d3df.webp 1630w",
+        "width": 1630,
+        "height": 1292,
+        "alt": "Vista frontale",
+        "alt_en": "Front view",
+        "caption": "Olio su tela, 50×40 cm"
+      },
+      "images": [
+        {
+          "src": "/content/opere/2026/studio-01/01-frontale-1630-ad80b7d3df.webp",
+          "srcset": "/content/opere/2026/studio-01/01-frontale-400-ad80b7d3df.webp 400w, /content/opere/2026/studio-01/01-frontale-800-ad80b7d3df.webp 800w, /content/opere/2026/studio-01/01-frontale-1600-ad80b7d3df.webp 1600w, /content/opere/2026/studio-01/01-frontale-1630-ad80b7d3df.webp 1630w",
+          "width": 1630,
+          "height": 1292,
+          "alt": "Vista frontale",
+          "alt_en": "Front view",
+          "caption": "Olio su tela, 50×40 cm"
+        }
+      ]
+    }
+  ],
+  "esposizioni": [
+    {
+      "id": "sample-mostra",
+      "year": 2026,
+      "title": "Mostra di prova",
+      "title_en": "Sample exhibition",
+      "description": "Esempio di esposizione personale, da rimpiazzare con dati reali.",
+      "description_en": "Sample personal exhibition, replace with real data.",
+      "venue": "Galleria Esempio, Milano",
+      "venue_en": "Example Gallery, Milan",
+      "start_date": "2026-01",
+      "end_date": "2026-03",
+      "images": []
+    }
+  ]
+}

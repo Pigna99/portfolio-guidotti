@@ -6,12 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "content": "node scripts/build-content.mjs",
+    "sync-content": "rsync -avz --delete-after --info=progress2 public/content/ pigna-bot:/opt/portfolio-guidotti/public/content/",
+    "logo": "node scripts/process-logo.mjs"
   },
   "dependencies": {
     "next": "16.2.4",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/node": "^20",

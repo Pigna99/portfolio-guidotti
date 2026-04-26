@@ -7,6 +7,8 @@ export interface LightboxItem {
   title: string;
   meta?: string;
   src?: string;
+  srcset?: string;
+  alt?: string;
 }
 
 interface Props {
@@ -51,8 +53,6 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
     if (e.target === e.currentTarget) onClose();
   };
 
-  // vw/vh-based caps so the image is always fully visible inside the viewport,
-  // with safe room for the close/prev/next buttons on the edges.
   const imgSize =
     "max-w-[calc(100vw-5rem)] max-h-[calc(100dvh-7rem)] md:max-w-[calc(100vw-10rem)] md:max-h-[calc(100dvh-7rem)]";
 
@@ -118,7 +118,9 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={current.src}
-                alt={current.title}
+                srcSet={current.srcset}
+                sizes="100vw"
+                alt={current.alt ?? current.title}
                 draggable={false}
                 onLoad={() => setImgLoaded(true)}
                 className={`block ${imgSize} w-auto h-auto select-none transition-opacity duration-300 ${
@@ -132,7 +134,6 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
             </div>
           )}
 
-          {/* Info overlay — desktop hover, mobile always */}
           {imgLoaded && (
             <>
               <div
