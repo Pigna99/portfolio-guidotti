@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-04-26T05:56:48.329Z",
+  "generatedAt": "2026-04-26T07:19:25.976Z",
   "carosello": [],
   "opere": [
     {
       "id": "studio-01",
       "year": 2026,
       "date": "2026-01",
-      "title": "Studio #01",
+      "title": "Studio #01 Pigna Test",
       "title_en": "Study #01",
       "description": "Olio su tela, prova di studio.",
       "description_en": "Oil on canvas, study piece.",
