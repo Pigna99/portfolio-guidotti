@@ -1,6 +1,21 @@
 {
-  "generatedAt": "2026-04-26T07:19:25.976Z",
-  "carosello": [],
+  "generatedAt": "2026-04-26T07:39:01.686Z",
+  "carosello": [
+    {
+      "src": "/content/carosello/01-800-603b8fce23.webp",
+      "srcset": "/content/carosello/01-400-603b8fce23.webp 400w, /content/carosello/01-800-603b8fce23.webp 800w",
+      "width": 800,
+      "height": 800,
+      "alt": "Studio del 2026"
+    },
+    {
+      "src": "/content/carosello/pedaso-282-90d9ca6286.webp",
+      "srcset": "/content/carosello/pedaso-282-90d9ca6286.webp 282w",
+      "width": 282,
+      "height": 179,
+      "alt": "Lo svelto"
+    }
+  ],
   "opere": [
     {
       "id": "studio-01",
