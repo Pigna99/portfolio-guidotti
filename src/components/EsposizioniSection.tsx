@@ -76,24 +76,39 @@ export default function EsposizioniSection() {
                     );
                     const hasMedia = e.media.length > 0;
 
-                    const content = (
-                      <>
-                        <p className="text-base md:text-lg font-bold">{title}</p>
-                        {venue && (
-                          <p className="text-sm md:text-base mt-1">{venue}</p>
-                        )}
-                        {dateRange && (
-                          <p className="text-xs md:text-sm opacity-70 mt-1">
-                            {dateRange}
+                    const renderContent = (clickable: boolean) => {
+                      const linkClass = clickable
+                        ? "underline underline-offset-4 decoration-black/40 group-hover:decoration-rosso"
+                        : "";
+                      return (
+                        <>
+                          <p
+                            className={`text-base md:text-lg font-bold ${linkClass}`}
+                          >
+                            {title}
                           </p>
-                        )}
-                        {description && (
-                          <p className="text-sm md:text-base mt-2 opacity-90 max-w-3xl">
-                            {description}
-                          </p>
-                        )}
-                      </>
-                    );
+                          {venue && (
+                            <p
+                              className={`text-sm md:text-base mt-1 ${linkClass}`}
+                            >
+                              {venue}
+                            </p>
+                          )}
+                          {dateRange && (
+                            <p className="text-xs md:text-sm opacity-70 mt-1">
+                              {dateRange}
+                            </p>
+                          )}
+                          {description && (
+                            <p
+                              className={`text-sm md:text-base mt-2 opacity-90 max-w-3xl ${linkClass}`}
+                            >
+                              {description}
+                            </p>
+                          )}
+                        </>
+                      );
+                    };
 
                     return (
                       <li
@@ -106,10 +121,10 @@ export default function EsposizioniSection() {
                             onClick={() => setOpen(e)}
                             className="block text-left w-full group hover:text-rosso transition-colors cursor-pointer"
                           >
-                            {content}
+                            {renderContent(true)}
                           </button>
                         ) : (
-                          <div>{content}</div>
+                          <div>{renderContent(false)}</div>
                         )}
                       </li>
                     );

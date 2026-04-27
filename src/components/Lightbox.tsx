@@ -32,7 +32,9 @@ const SWIPE_THRESHOLD = 60;
 export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
   const { t } = useI18n();
   const [index, setIndex] = useState(startIndex);
-  const [showInfo, setShowInfo] = useState(true);
+  // Mobile tap toggles this. Desktop hover overrides it via local state.
+  const [showInfo, setShowInfo] = useState(false);
+  const [hoveringImage, setHoveringImage] = useState(false);
   const [imgLoaded, setImgLoaded] = useState<Record<number, boolean>>({});
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -43,14 +45,16 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
   const current = items[index];
   const total = items.length;
 
-  const next = useCallback(
-    () => setIndex((i) => (i + 1) % total),
-    [total]
-  );
+  const next = useCallback(() => setIndex((i) => (i + 1) % total), [total]);
   const prev = useCallback(
     () => setIndex((i) => (i - 1 + total) % total),
     [total]
   );
+
+  // Reset toggleable info every time we navigate to a different slide.
+  useEffect(() => {
+    setShowInfo(false);
+  }, [index]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -63,11 +67,15 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [next, prev, onClose]);
 
-  // Lock body scroll
+  // Lock body + html scroll while open (iOS Safari needs html too).
   useEffect(() => {
+    const prevBody = document.body.style.overflow;
+    const prevHtml = document.documentElement.style.overflow;
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = prevBody;
+      document.documentElement.style.overflow = prevHtml;
     };
   }, []);
 
@@ -114,13 +122,13 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
   const onTouchEnd = () => {
     if (touchStartX.current === null) return;
     const isHorizontal = moveAxis.current === "x";
-    const movedFar = Math.abs(dragX) > 20;
+    const movedFar = Math.abs(dragX) > 20 || moveAxis.current === "y";
 
     if (isHorizontal && total > 1) {
       if (dragX > SWIPE_THRESHOLD) prev();
       else if (dragX < -SWIPE_THRESHOLD) next();
     } else if (!movedFar && current.type === "image") {
-      // Pure tap on image → toggle info (mobile UX)
+      // Pure tap (no real movement) on image → toggle info on mobile.
       setShowInfo((v) => !v);
     }
 
@@ -140,9 +148,12 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
   const imgConstraints =
     "max-w-[calc(100vw-5rem)] max-h-[calc(100dvh-7rem)] md:max-w-[calc(100vw-10rem)] md:max-h-[calc(100dvh-7rem)]";
 
+  // Caption is visible if user is hovering (desktop) or has tapped to show (mobile)
+  const captionVisible = hoveringImage || showInfo;
+
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/85 animate-fade-in"
+      className="fixed inset-0 z-50 bg-black/85 animate-fade-in overscroll-contain"
       role="dialog"
       aria-modal="true"
       onClick={closeOnBackdrop}
@@ -183,14 +194,17 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
         </>
       )}
 
-      {/* Slider track: each item lives on its own panel translated by index*100% */}
+      {/* Slider track. touch-none disables browser touch defaults so the JS
+          handles swipe and the page underneath does NOT scroll. */}
       <div
-        className="absolute inset-0 overflow-hidden touch-pan-y"
+        className="absolute inset-0 overflow-hidden touch-none"
         onClick={closeOnBackdrop}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         onTouchCancel={onTouchEnd}
+        onMouseEnter={() => setHoveringImage(true)}
+        onMouseLeave={() => setHoveringImage(false)}
       >
         <div
           className={`absolute inset-0 flex ${
@@ -217,8 +231,7 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
                     <iframe
                       src={`https://www.youtube.com/embed/${it.videoId}?rel=0&modestbranding=1`}
                       title={it.title}
-                      className="absolute inset-0 w-full h-full"
-                      frameBorder="0"
+                      className="absolute inset-0 w-full h-full border-0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
                     />
@@ -256,44 +269,25 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
         </div>
       </div>
 
-      {/* Caption overlay (always rendered for current item; mobile toggleable, desktop hover) */}
+      {/* Caption: hidden by default. Desktop = visible on hover. Mobile = visible on tap. */}
       {(current.type === "video" || isLoaded(index)) && (
-        <CaptionOverlay item={current} showInfo={showInfo} />
-      )}
-    </div>
-  );
-}
-
-function CaptionOverlay({
-  item,
-  showInfo,
-}: {
-  item: LightboxItem;
-  showInfo: boolean;
-}) {
-  const [hovering, setHovering] = useState(false);
-  return (
-    <div
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-      className="pointer-events-auto absolute bottom-0 left-0 right-0 z-20"
-    >
-      <div
-        className={`px-4 py-4 md:px-10 md:py-7 bg-black/90 md:bg-gradient-to-t md:from-black/95 md:via-black/85 md:to-black/0 text-white transition-opacity duration-300 ${
-          showInfo || hovering ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-base md:text-lg font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-            {item.title}
-          </h3>
-          {item.meta && (
-            <p className="text-sm md:text-base opacity-90 mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-              {item.meta}
-            </p>
-          )}
+        <div
+          className={`pointer-events-none absolute bottom-0 left-0 right-0 z-20 px-4 py-4 md:px-10 md:py-7 bg-gradient-to-t from-black/95 via-black/85 to-black/0 text-white transition-opacity duration-300 ${
+            captionVisible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-base md:text-lg font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              {current.title}
+            </h3>
+            {current.meta && (
+              <p className="text-sm md:text-base opacity-90 mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                {current.meta}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

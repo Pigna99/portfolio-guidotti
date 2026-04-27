@@ -5,7 +5,7 @@
   --color-rosso: #9d2000;
   --color-rosso-vivo: #d02c00;
   --font-sans: Helvetica, "Helvetica Neue", Arial, sans-serif;
-  --font-display: "Dirty Headline", "Special Elite", Impact, sans-serif;
+  --font-display: "Dirty Headline", var(--font-special-elite), "Special Elite", Impact, sans-serif;
 }
 
 /* Display font (intro screen). Drop the actual font file at
