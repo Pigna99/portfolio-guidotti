@@ -5,6 +5,24 @@
   --color-rosso: #9d2000;
   --color-rosso-vivo: #d02c00;
   --font-sans: Helvetica, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Dirty Headline", "Special Elite", Impact, sans-serif;
+}
+
+/* Display font (intro screen). Drop the actual font file at
+ * public/fonts/dirty-headline.woff2 — until then it falls back to the
+ * sans-serif chain above. */
+@font-face {
+  font-family: "Dirty Headline";
+  src: url("/fonts/dirty-headline.woff2") format("woff2"),
+       url("/fonts/dirty-headline.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  text-shadow: -3px 2px 0 rgba(0, 0, 0, 0.35);
 }
 
 html,

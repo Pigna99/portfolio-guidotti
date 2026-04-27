@@ -23,28 +23,39 @@ export default function OpereSection() {
     lang === "en" && o.title_en ? o.title_en : o.title;
 
   const buildLightboxItems = (o: Opera): LightboxItem[] => {
-    const items: LightboxItem[] = [];
     const title = localizedTitle(o);
-    if (o.videoId) {
-      items.push({
-        type: "video",
-        title,
-        meta:
-          (lang === "en" ? o.description_en : o.description) ?? o.description,
-        videoId: o.videoId,
-      });
-    }
-    o.images.forEach((img, i) => {
-      items.push({
+    return o.media.map((m, i): LightboxItem => {
+      const baseTitle = `${title} (${i + 1}/${o.media.length})`;
+      const meta =
+        (lang === "en" ? m.caption_en : m.caption) ?? m.caption ?? undefined;
+      if (m.type === "video") {
+        return { type: "video", title: baseTitle, meta, videoId: m.videoId };
+      }
+      return {
         type: "image",
-        title: `${title} (${i + 1}/${o.images.length})`,
-        meta: (lang === "en" ? img.caption_en : img.caption) ?? img.caption,
-        src: img.src,
-        srcset: img.srcset,
-        alt: lang === "en" && img.alt_en ? img.alt_en : img.alt,
-      });
+        title: baseTitle,
+        meta,
+        src: m.src,
+        srcset: m.srcset,
+        alt: lang === "en" && m.alt_en ? m.alt_en : m.alt,
+      };
     });
-    return items;
+  };
+
+  // Touch-drag finger hover: as the user drags across the grid, highlight
+  // whichever opera card is currently under the finger.
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const card = el?.closest<HTMLElement>("[data-opera-id]");
+    setHovered(card?.dataset.operaId ?? null);
+  };
+
+  const handleTouchEnd = () => {
+    // Keep hovered until next click. Reset slightly later so the tap that
+    // triggers the click does not clear the highlight prematurely.
+    setTimeout(() => setHovered(null), 200);
   };
 
   return (
@@ -56,7 +67,12 @@ export default function OpereSection() {
           e lancia <code className="bg-black/10 px-1 py-0.5 rounded">npm run content</code>.
         </p>
       ) : (
-        <div className="space-y-10 md:space-y-14">
+        <div
+          className="space-y-10 md:space-y-14"
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
+        >
           {years.map((year) => {
             const items = opere.filter((o) => o.year === year);
             return (
@@ -72,6 +88,7 @@ export default function OpereSection() {
                       <button
                         key={o.id}
                         type="button"
+                        data-opera-id={o.id}
                         onClick={() => setOpen(o)}
                         onMouseEnter={() => setHovered(o.id)}
                         onMouseLeave={() => setHovered(null)}
@@ -85,7 +102,7 @@ export default function OpereSection() {
                           label={t("placeholderImage")}
                         />
                         <div
-                          className={`absolute inset-0 bg-rosso-vivo flex items-center justify-center text-white text-center px-3 transition-opacity duration-300 ${
+                          className={`absolute inset-0 bg-rosso-vivo flex items-center justify-center text-white text-center px-3 transition-opacity duration-300 pointer-events-none ${
                             isHovered ? "opacity-100" : "opacity-0"
                           }`}
                         >
@@ -103,7 +120,7 @@ export default function OpereSection() {
         </div>
       )}
 
-      {open && (
+      {open && open.media.length > 0 && (
         <Lightbox
           items={buildLightboxItems(open)}
           onClose={() => setOpen(null)}

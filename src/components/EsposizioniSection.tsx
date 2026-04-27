@@ -24,27 +24,23 @@ export default function EsposizioniSection() {
   });
 
   const buildLightboxItems = (e: Esposizione): LightboxItem[] => {
-    const items: LightboxItem[] = [];
     const { title, venue } = localized(e);
-    if (e.videoId) {
-      items.push({
-        type: "video",
-        title,
-        meta: venue,
-        videoId: e.videoId,
-      });
-    }
-    e.images.forEach((img, i) => {
-      items.push({
+    return e.media.map((m, i): LightboxItem => {
+      const baseTitle = `${title} (${i + 1}/${e.media.length})`;
+      const meta =
+        (lang === "en" ? m.caption_en : m.caption) ?? m.caption ?? venue;
+      if (m.type === "video") {
+        return { type: "video", title: baseTitle, meta, videoId: m.videoId };
+      }
+      return {
         type: "image",
-        title: `${title} (${i + 1}/${e.images.length})`,
-        meta: (lang === "en" ? img.caption_en : img.caption) ?? img.caption ?? venue,
-        src: img.src,
-        srcset: img.srcset,
-        alt: lang === "en" && img.alt_en ? img.alt_en : img.alt,
-      });
+        title: baseTitle,
+        meta,
+        src: m.src,
+        srcset: m.srcset,
+        alt: lang === "en" && m.alt_en ? m.alt_en : m.alt,
+      };
     });
-    return items;
   };
 
   return (
@@ -78,25 +74,11 @@ export default function EsposizioniSection() {
                       e.end_date,
                       lang
                     );
-                    const hasMedia = e.images.length > 0 || !!e.videoId;
-                    return (
-                      <li
-                        key={e.id}
-                        className="border-t border-black/30 pt-4"
-                      >
-                        {hasMedia ? (
-                          <button
-                            type="button"
-                            onClick={() => setOpen(e)}
-                            className="text-left text-base md:text-lg font-bold hover:text-rosso transition-colors"
-                          >
-                            {title}
-                          </button>
-                        ) : (
-                          <p className="text-base md:text-lg font-bold">
-                            {title}
-                          </p>
-                        )}
+                    const hasMedia = e.media.length > 0;
+
+                    const content = (
+                      <>
+                        <p className="text-base md:text-lg font-bold">{title}</p>
                         {venue && (
                           <p className="text-sm md:text-base mt-1">{venue}</p>
                         )}
@@ -106,9 +88,28 @@ export default function EsposizioniSection() {
                           </p>
                         )}
                         {description && (
-                          <p className="text-sm md:text-base mt-2 opacity-90 max-w-2xl">
+                          <p className="text-sm md:text-base mt-2 opacity-90 max-w-3xl">
                             {description}
                           </p>
+                        )}
+                      </>
+                    );
+
+                    return (
+                      <li
+                        key={e.id}
+                        className="border-t border-black/30 pt-4"
+                      >
+                        {hasMedia ? (
+                          <button
+                            type="button"
+                            onClick={() => setOpen(e)}
+                            className="block text-left w-full group hover:text-rosso transition-colors cursor-pointer"
+                          >
+                            {content}
+                          </button>
+                        ) : (
+                          <div>{content}</div>
                         )}
                       </li>
                     );
@@ -120,7 +121,7 @@ export default function EsposizioniSection() {
         </div>
       )}
 
-      {open && (
+      {open && open.media.length > 0 && (
         <Lightbox
           items={buildLightboxItems(open)}
           onClose={() => setOpen(null)}

@@ -1,7 +1,8 @@
 {
-  "generatedAt": "2026-04-26T14:34:53.031Z",
+  "generatedAt": "2026-04-27T05:03:05.857Z",
   "carosello": [
     {
+      "type": "image",
       "src": "/content/carosello/01-800-603b8fce23.webp",
       "srcset": "/content/carosello/01-400-603b8fce23.webp 400w, /content/carosello/01-800-603b8fce23.webp 800w",
       "width": 800,
@@ -9,6 +10,7 @@
       "alt": "Studio del 2026"
     },
     {
+      "type": "image",
       "src": "/content/carosello/pedaso-282-90d9ca6286.webp",
       "srcset": "/content/carosello/pedaso-282-90d9ca6286.webp 282w",
       "width": 282,
@@ -26,6 +28,7 @@
       "description": "Olio su tela, prova di studio.",
       "description_en": "Oil on canvas, study piece.",
       "cover": {
+        "type": "image",
         "src": "/content/opere/2026/studio-01/01-frontale-1630-ad80b7d3df.webp",
         "srcset": "/content/opere/2026/studio-01/01-frontale-400-ad80b7d3df.webp 400w, /content/opere/2026/studio-01/01-frontale-800-ad80b7d3df.webp 800w, /content/opere/2026/studio-01/01-frontale-1600-ad80b7d3df.webp 1600w, /content/opere/2026/studio-01/01-frontale-1630-ad80b7d3df.webp 1630w",
         "width": 1630,
@@ -34,8 +37,9 @@
         "alt_en": "Front view",
         "caption": "Olio su tela, 50×40 cm"
       },
-      "images": [
+      "media": [
         {
+          "type": "image",
           "src": "/content/opere/2026/studio-01/01-frontale-1630-ad80b7d3df.webp",
           "srcset": "/content/opere/2026/studio-01/01-frontale-400-ad80b7d3df.webp 400w, /content/opere/2026/studio-01/01-frontale-800-ad80b7d3df.webp 800w, /content/opere/2026/studio-01/01-frontale-1600-ad80b7d3df.webp 1600w, /content/opere/2026/studio-01/01-frontale-1630-ad80b7d3df.webp 1630w",
           "width": 1630,
@@ -59,7 +63,7 @@
       "venue_en": "Example Gallery, Milan",
       "start_date": "2026-01",
       "end_date": "2026-03",
-      "images": []
+      "media": []
     }
   ],
   "pdfs": {}

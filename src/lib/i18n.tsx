@@ -13,6 +13,7 @@ export type Lang = "it" | "en";
 const dict = {
   it: {
     introDevelopedBy: "Sviluppato da",
+    introVisualArtist: "Visual Artist",
 
     navOpere: "Opere",
     navEsposizioni: "Esposizioni",
@@ -71,6 +72,7 @@ Dal 2020 lavora nel suo studio ed è impegnato in mostre d’arte contemporanea.
   },
   en: {
     introDevelopedBy: "Developed by",
+    introVisualArtist: "Visual Artist",
 
     navOpere: "Works",
     navEsposizioni: "Exhibitions",

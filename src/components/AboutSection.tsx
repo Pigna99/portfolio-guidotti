@@ -12,12 +12,25 @@ export default function AboutSection() {
 
   return (
     <SectionLayout>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start">
-        <div className="space-y-6 md:space-y-8 text-base md:text-lg leading-relaxed max-w-xl">
+      <div className="text-base md:text-lg leading-relaxed">
+        {/* Mobile: portrait first via order utility.
+            Desktop: portrait floats right so the text wraps under it once it
+            extends past the image's height. */}
+        <div className="lg:float-right lg:ml-10 lg:mb-6 lg:w-[42%] lg:max-w-md mb-6">
+          <div className="aspect-[3/4]">
+            <PlaceholderImage
+              src="/ritratto.webp"
+              alt={t("aboutPortraitAlt") ?? ""}
+              label={t("placeholderPortrait")}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-12 md:space-y-16 max-w-3xl">
           <p className="whitespace-pre-line">{t("aboutStatement")}</p>
           <p className="whitespace-pre-line">{t("aboutBio")}</p>
           {(cvUrl || portfolioUrl) && (
-            <div className="flex flex-col gap-2 pt-4">
+            <div className="flex flex-col gap-2 pt-2">
               {cvUrl && (
                 <a
                   href={cvUrl}
@@ -42,9 +55,8 @@ export default function AboutSection() {
           )}
         </div>
 
-        <div className="aspect-[3/4] w-full max-w-md">
-          <PlaceholderImage src="/ritratto.webp" label={t("placeholderPortrait")} />
-        </div>
+        {/* Clear the float so the section ends cleanly */}
+        <div className="lg:clear-both" />
       </div>
     </SectionLayout>
   );

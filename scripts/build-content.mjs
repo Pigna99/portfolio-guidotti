@@ -17,12 +17,12 @@
  *       *.{jpg,jpeg,png,webp}
  *     opere/{anno}/{slug-opera}/
  *       opera.json                          (title, description, date,
- *                                            optional cover, optional video,
- *                                            images[])
+ *                                            optional cover, images[] —
+ *                                            entries can be either image
+ *                                            files OR YouTube videos)
  *       *.{jpg,jpeg,png,webp}
  *     esposizioni/{anno}/{slug-mostra}/
- *       esposizione.json                    (title, venue, dates,
- *                                            optional video, images[])
+ *       esposizione.json                    (title, venue, dates, images[])
  *       *.{jpg,jpeg,png,webp}
  *
  * Output WebP filenames are content-hashed, so re-running this script only
@@ -95,7 +95,6 @@ function slugify(s) {
     .replace(/^-+|-+$/g, "");
 }
 
-/** Extract YouTube video id from any common YouTube URL form. */
 function extractYouTubeId(url) {
   if (!url || typeof url !== "string") return null;
   const patterns = [
@@ -112,10 +111,6 @@ function extractYouTubeId(url) {
   return null;
 }
 
-/**
- * Encode a single source image to multiple WebP widths under outDir.
- * Returns { src, srcset, width, height }.
- */
 async function processImage(srcPath, outDir) {
   await mkdir(outDir, { recursive: true });
 
@@ -151,7 +146,13 @@ async function processImage(srcPath, outDir) {
 
   const srcset = variants.map((v) => `${relPublic(v.path)} ${v.w}w`).join(", ");
   const src = relPublic(variants[variants.length - 1].path);
-  return { src, srcset, width: naturalWidth, height: naturalHeight };
+  return {
+    type: "image",
+    src,
+    srcset,
+    width: naturalWidth,
+    height: naturalHeight,
+  };
 }
 
 async function readJsonIfExists(filepath) {
@@ -164,38 +165,95 @@ async function readJsonIfExists(filepath) {
   }
 }
 
-async function buildImageList(dir, info, outDir) {
+/**
+ * Build a mixed media list from the JSON `images` array (which can contain
+ * both image and video entries). Falls back to alphabetical disk order if
+ * no JSON ordering is provided.
+ */
+async function buildMediaList(dir, info, outDir) {
   const diskFiles = await listFiles(dir, isImage);
   const diskByName = new Map(diskFiles.map((p) => [path.basename(p), p]));
 
-  let order;
-  if (info && Array.isArray(info.images) && info.images.length > 0) {
-    order = info.images.map((entry) =>
-      typeof entry === "string"
-        ? { file: entry }
-        : { file: entry.file, meta: entry }
-    );
-  } else {
-    order = [...diskFiles].sort().map((p) => ({ file: path.basename(p) }));
+  const result = [];
+
+  // Optional top-level `video` field acts as an extra video prepended to the
+  // list (legacy convenience for opere/esposizioni with a single video).
+  if (info?.video) {
+    const id = extractYouTubeId(info.video);
+    if (id) {
+      result.push({ type: "video", videoId: id });
+    } else {
+      warn(`Top-level video URL not parseable: ${info.video}`);
+    }
   }
 
-  const images = [];
-  for (const { file, meta } of order) {
-    const srcPath = diskByName.get(file);
-    if (!srcPath) {
-      warn(`Image not found on disk: ${path.join(dir, file)}`);
+  let ordered;
+  if (info && Array.isArray(info.images) && info.images.length > 0) {
+    ordered = info.images;
+  } else {
+    ordered = [...diskFiles].sort().map((p) => ({ file: path.basename(p) }));
+  }
+
+  for (const entry of ordered) {
+    if (typeof entry === "string") {
+      const srcPath = diskByName.get(entry);
+      if (!srcPath) {
+        warn(`Image not found on disk: ${path.join(dir, entry)}`);
+        continue;
+      }
+      const processed = await processImage(srcPath, outDir);
+      if (processed) result.push(processed);
       continue;
     }
-    const processed = await processImage(srcPath, outDir);
-    if (!processed) continue;
-    images.push({
-      ...processed,
-      alt: meta?.alt,
-      alt_en: meta?.alt_en,
-      caption: meta?.caption,
-      caption_en: meta?.caption_en,
-    });
+
+    if (entry?.video) {
+      const id = extractYouTubeId(entry.video);
+      if (!id) {
+        warn(`Video URL not parseable: ${entry.video}`);
+        continue;
+      }
+      result.push({
+        type: "video",
+        videoId: id,
+        caption: entry.caption,
+        caption_en: entry.caption_en,
+        alt: entry.alt,
+        alt_en: entry.alt_en,
+      });
+      continue;
+    }
+
+    if (entry?.file) {
+      const srcPath = diskByName.get(entry.file);
+      if (!srcPath) {
+        warn(`Image not found on disk: ${path.join(dir, entry.file)}`);
+        continue;
+      }
+      const processed = await processImage(srcPath, outDir);
+      if (!processed) continue;
+      result.push({
+        ...processed,
+        alt: entry.alt,
+        alt_en: entry.alt_en,
+        caption: entry.caption,
+        caption_en: entry.caption_en,
+      });
+    }
   }
+
+  return result;
+}
+
+async function buildCarosello() {
+  const dir = path.join(CONTENT_SRC, "carosello");
+  if (!existsSync(dir)) return [];
+
+  const info = await readJsonIfExists(path.join(dir, "carosello.json"));
+  const outDir = path.join(PUBLIC_OUT, "carosello");
+  // Carousel only handles images (no videos)
+  const mediaList = await buildMediaList(dir, info, outDir);
+  const images = mediaList.filter((m) => m.type === "image");
+  log(`✓ Carosello: ${images.length} images`);
   return images;
 }
 
@@ -207,17 +265,6 @@ async function buildCoverImage(dir, coverFile, outDir) {
     return null;
   }
   return processImage(coverPath, outDir);
-}
-
-async function buildCarosello() {
-  const dir = path.join(CONTENT_SRC, "carosello");
-  if (!existsSync(dir)) return [];
-
-  const info = await readJsonIfExists(path.join(dir, "carosello.json"));
-  const outDir = path.join(PUBLIC_OUT, "carosello");
-  const images = await buildImageList(dir, info, outDir);
-  log(`✓ Carosello: ${images.length} images`);
-  return images;
 }
 
 async function buildOpere() {
@@ -242,18 +289,16 @@ async function buildOpere() {
       }
 
       const outDir = path.join(PUBLIC_OUT, "opere", String(year), operaDir.name);
-      const images = await buildImageList(operaDir.path, info, outDir);
+      const media = await buildMediaList(operaDir.path, info, outDir);
 
       let cover = await buildCoverImage(operaDir.path, info?.cover, outDir);
-      if (!cover && images.length > 0) cover = images[0];
-
-      const videoId = extractYouTubeId(info?.video);
-      if (info?.video && !videoId) {
-        warn(`Could not parse YouTube URL: ${info.video}`);
+      if (!cover) {
+        const firstImage = media.find((m) => m.type === "image");
+        if (firstImage) cover = firstImage;
       }
 
-      if (!cover && images.length === 0 && !videoId) {
-        warn(`Skipping ${operaDir.name}: no cover, no images, no video`);
+      if (!cover && media.length === 0) {
+        warn(`Skipping ${operaDir.name}: no cover, no media`);
         continue;
       }
 
@@ -266,21 +311,23 @@ async function buildOpere() {
         description: info?.description,
         description_en: info?.description_en,
         cover,
-        videoId: videoId ?? undefined,
-        images,
+        media,
       });
+      const videos = media.filter((m) => m.type === "video").length;
+      const images = media.filter((m) => m.type === "image").length;
       log(
         `✓ Opera: ${year}/${operaDir.name} ` +
-          `(${images.length} img${videoId ? " + video" : ""})`
+          `(${images} img${videos ? ` + ${videos} video` : ""})`
       );
     }
   }
 
+  // Sort: year DESC, then date DESC, then ID DESC
   results.sort((a, b) => {
     if (a.year !== b.year) return b.year - a.year;
     const dateCmp = (b.date ?? "").localeCompare(a.date ?? "");
     if (dateCmp !== 0) return dateCmp;
-    return a.title.localeCompare(b.title);
+    return b.id.localeCompare(a.id);
   });
 
   return results;
@@ -312,12 +359,7 @@ async function buildEsposizioni() {
         String(year),
         expoDir.name
       );
-      const images = await buildImageList(expoDir.path, info, outDir);
-
-      const videoId = extractYouTubeId(info?.video);
-      if (info?.video && !videoId) {
-        warn(`Could not parse YouTube URL: ${info.video}`);
-      }
+      const media = await buildMediaList(expoDir.path, info, outDir);
 
       results.push({
         id: expoDir.name,
@@ -330,25 +372,29 @@ async function buildEsposizioni() {
         venue_en: info?.venue_en,
         start_date: info?.start_date,
         end_date: info?.end_date,
-        videoId: videoId ?? undefined,
-        images,
+        media,
       });
+
+      const videos = media.filter((m) => m.type === "video").length;
+      const images = media.filter((m) => m.type === "image").length;
       log(
         `✓ Esposizione: ${year}/${expoDir.name} ` +
-          `(${images.length} img${videoId ? " + video" : ""})`
+          `(${images} img${videos ? ` + ${videos} video` : ""})`
       );
     }
   }
 
+  // Sort: year DESC, then start_date DESC, then ID DESC
   results.sort((a, b) => {
     if (a.year !== b.year) return b.year - a.year;
-    return (b.start_date ?? "").localeCompare(a.start_date ?? "");
+    const dateCmp = (b.start_date ?? "").localeCompare(a.start_date ?? "");
+    if (dateCmp !== 0) return dateCmp;
+    return b.id.localeCompare(a.id);
   });
 
   return results;
 }
 
-/** Copy CV / Portfolio PDFs from /content/ → /public/content/. */
 async function buildPdfs() {
   if (!existsSync(CONTENT_SRC)) return {};
   await mkdir(PUBLIC_OUT, { recursive: true });
@@ -356,7 +402,6 @@ async function buildPdfs() {
   const files = await listFiles(CONTENT_SRC, (n) =>
     n.toLowerCase().endsWith(".pdf")
   );
-  /** @type {Record<string,string>} */
   const result = {};
   for (const file of files) {
     const lower = path.basename(file).toLowerCase();

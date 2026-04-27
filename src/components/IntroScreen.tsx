@@ -12,7 +12,7 @@ export default function IntroScreen({ onEnter }: Props) {
 
   return (
     <div className="min-h-screen w-full bg-rosso-vivo text-white flex flex-col p-6 md:p-10">
-      <div className="flex-1 flex flex-col items-center justify-center gap-8">
+      <div className="flex-1 flex flex-col items-center justify-center gap-6">
         <button
           type="button"
           onClick={onEnter}
@@ -27,7 +27,15 @@ export default function IntroScreen({ onEnter }: Props) {
             className="w-36 md:w-56 max-w-full h-auto pointer-events-none"
           />
         </button>
-        <p className="text-3xl md:text-5xl font-bold tracking-tight">Luca Guidotti</p>
+
+        <div className="flex flex-col items-center gap-1 md:gap-2 text-center">
+          <p className="font-display text-4xl md:text-6xl xl:text-7xl tracking-tight leading-none">
+            Luca Guidotti
+          </p>
+          <p className="font-display text-xl md:text-3xl xl:text-4xl tracking-tight leading-none opacity-95">
+            {t("introVisualArtist")}
+          </p>
+        </div>
       </div>
 
       <footer className="text-center text-xs md:text-sm space-y-1 pt-6">
