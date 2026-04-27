@@ -14,7 +14,7 @@ export default function TopBar() {
         type="button"
         onClick={() => navigate("/")}
         aria-label="Torna alla homepage"
-        className="flex-1 text-center font-display text-2xl md:text-2xl xl:text-4xl tracking-tight truncate hover:opacity-70 transition-opacity"
+        className="flex-1 text-center font-display text-xl sm:text-xl md:text-2xl xl:text-4xl tracking-tight truncate hover:opacity-70 transition-opacity"
       >
         Luca Guidotti
       </button>

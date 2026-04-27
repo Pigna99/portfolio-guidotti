@@ -27,8 +27,12 @@ export default function AboutSection() {
         </div>
 
         <div className="space-y-12 md:space-y-16 max-w-3xl">
-          <p className="whitespace-pre-line">{t("aboutStatement")}</p>
-          <p className="whitespace-pre-line">{t("aboutBio")}</p>
+          <p className="text-justify hyphens-auto">
+            {t("aboutStatement")}
+          </p>
+          <p className="text-justify hyphens-auto">
+            {t("aboutBio")}
+          </p>
           {(cvUrl || portfolioUrl) && (
             <div className="flex flex-col gap-2 pt-2">
               {cvUrl && (
