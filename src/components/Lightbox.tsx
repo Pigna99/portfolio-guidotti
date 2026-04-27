@@ -33,7 +33,7 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
   const { t } = useI18n();
   const [index, setIndex] = useState(startIndex);
   // Mobile tap toggles this. Desktop hover overrides it via local state.
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
   const [hoveringImage, setHoveringImage] = useState(false);
   const [imgLoaded, setImgLoaded] = useState<Record<number, boolean>>({});
   const [dragX, setDragX] = useState(0);
@@ -53,7 +53,7 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
 
   // Reset toggleable info every time we navigate to a different slide.
   useEffect(() => {
-    setShowInfo(false);
+    setShowInfo(true);
   }, [index]);
 
   // Keyboard navigation
