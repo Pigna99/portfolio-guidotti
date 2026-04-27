@@ -211,10 +211,11 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
         </>
       )}
 
-      {/* Slider track. touch-none disables browser touch defaults so the JS
-          handles swipe and the page underneath does NOT scroll. */}
+      {/* Slider track. touch-action: pinch-zoom lets the browser handle
+          pinch-to-zoom natively while our JS handles single-finger swipe.
+          Multi-touch gestures bypass our handlers (see onTouchStart). */}
       <div
-        className="absolute inset-0 overflow-hidden touch-none"
+        className="absolute inset-0 overflow-hidden touch-pinch-zoom"
         onClick={closeOnBackdrop}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
