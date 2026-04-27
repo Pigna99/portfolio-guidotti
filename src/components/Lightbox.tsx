@@ -97,7 +97,20 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
     if (e.target === e.currentTarget) onClose();
   };
 
+  const resetTouch = () => {
+    touchStartX.current = null;
+    touchStartY.current = null;
+    moveAxis.current = "none";
+    setDragging(false);
+    setDragX(0);
+  };
+
   const onTouchStart = (e: React.TouchEvent) => {
+    // Multi-touch (pinch-to-zoom) → let the browser handle it
+    if (e.touches.length > 1) {
+      resetTouch();
+      return;
+    }
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     moveAxis.current = "none";
@@ -106,7 +119,9 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null) return;
+    if (e.touches.length > 1 || touchStartX.current === null || touchStartY.current === null) {
+      return;
+    }
     const dx = e.touches[0].clientX - touchStartX.current;
     const dy = e.touches[0].clientY - touchStartY.current;
     if (moveAxis.current === "none") {
@@ -119,8 +134,15 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
     }
   };
 
-  const onTouchEnd = () => {
+  const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return;
+    // Other touches still active (pinch in progress, lifted only one finger):
+    // don't treat this as end-of-swipe.
+    if (e.touches.length > 0) {
+      resetTouch();
+      return;
+    }
+
     const isHorizontal = moveAxis.current === "x";
     const movedFar = Math.abs(dragX) > 20 || moveAxis.current === "y";
 
@@ -128,15 +150,10 @@ export default function Lightbox({ items, startIndex = 0, onClose }: Props) {
       if (dragX > SWIPE_THRESHOLD) prev();
       else if (dragX < -SWIPE_THRESHOLD) next();
     } else if (!movedFar && current.type === "image") {
-      // Pure tap (no real movement) on image → toggle info on mobile.
       setShowInfo((v) => !v);
     }
 
-    touchStartX.current = null;
-    touchStartY.current = null;
-    moveAxis.current = "none";
-    setDragging(false);
-    setDragX(0);
+    resetTouch();
   };
 
   const setLoaded = useCallback((i: number) => {
