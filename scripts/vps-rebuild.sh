@@ -11,10 +11,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+echo "==> Fixing ownership/perms (idempotent)"
+sudo chown -R pigna:pigna node_modules 2>/dev/null || true
+sudo chown -R pigna:pigna .next 2>/dev/null || true
+sudo chmod -R u+rwX,go+rX content 2>/dev/null || true
+
 echo "==> npm run build (auto-runs content via prebuild)"
 npm run build
 
-echo "==> Copying static + public into standalone"
+echo "==> Refreshing standalone runtime assets"
+rm -rf .next/standalone/.next/static .next/standalone/public
 cp -r .next/static .next/standalone/.next/static
 cp -r public .next/standalone/public
 
