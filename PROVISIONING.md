@@ -15,7 +15,7 @@ Tutto quello che serve per: configurare la macchina di sviluppo, caricare conten
 
 L'artista (amico) ha SSH al VPS e carica direttamente in `/opt/portfolio-guidotti/content/`. Il dev fa `bash scripts/vps-rebuild.sh` per propagare le modifiche al sito live.
 
-Sito gira sul VPS Hetzner via PM2 (porta 3002), reverse-proxied da nginx su `https://guidotti.offerteai.it`.
+Sito gira sul VPS Hetzner via PM2 (porta 3002), reverse-proxied da nginx su `https://lucaguidotti.it` (con `https://www.lucaguidotti.it` e redirect 301 dal vecchio `guidotti.offerteai.it`).
 
 ---
 
@@ -244,11 +244,11 @@ Il parser supporta: `youtube.com/watch?v=...`, `youtu.be/...`, `youtube.com/embe
 ## 5. Riferimenti rapidi
 
 - **Repo GitHub**: https://github.com/Pigna99/portfolio-guidotti
-- **Sito**: https://guidotti.offerteai.it
+- **Sito**: https://lucaguidotti.it (alias https://www.lucaguidotti.it; redirect 301 da https://guidotti.offerteai.it)
 - **VPS**: `pigna@89.167.84.73:2222` (alias SSH `pigna-bot`)
 - **Path VPS app**: `/opt/portfolio-guidotti`
 - **Path VPS content** (artista carica qui): `/opt/portfolio-guidotti/content/`
 - **PM2 process**: `portfolio-guidotti` (port 3002)
-- **Reverse proxy**: nginx, config in `/etc/nginx/sites-available/guidotti.conf`
+- **Reverse proxy**: nginx, config in `/etc/nginx/sites-available/lucaguidotti.conf` (sito); `/etc/nginx/sites-available/guidotti.conf` (redirect 301 dal vecchio dominio)
 - **SSL**: Let's Encrypt via certbot, auto-rinnovo
 - **Workflow CI**: `.github/workflows/deploy.yml`
